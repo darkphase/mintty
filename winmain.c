@@ -470,7 +470,7 @@ win_reconfig(void)
     win_init_fonts(cfg.font.size);
     win_adapt_term_size();
   }
-  win_update_scrollbar();
+  // win_update_scrollbar();
   update_transparency();
   win_update_mouse();
 
@@ -976,11 +976,27 @@ main(int argc, char *argv[])
     cfg.x = CW_USEDEFAULT;
 
   // Create initial window.
-  wnd = CreateWindowExW(cfg.scrollbar < 0 ? WS_EX_LEFTSCROLLBAR : 0,
+  // wnd = CreateWindowExW(cfg.scrollbar < 0 ? WS_EX_LEFTSCROLLBAR : 0,
+  //                       wclass, wtitle,
+  //                       WS_OVERLAPPEDWINDOW | (cfg.scrollbar ? WS_VSCROLL : 0),
+  //                       cfg.x, cfg.y, width, height,
+  //                       null, null, inst, null);
+
+  wnd = CreateWindowExW(0,
                         wclass, wtitle,
-                        WS_OVERLAPPEDWINDOW | (cfg.scrollbar ? WS_VSCROLL : 0),
+                        WS_OVERLAPPEDWINDOW,
                         cfg.x, cfg.y, width, height,
                         null, null, inst, null);
+  
+  LONG lStyle = GetWindowLong(wnd, GWL_STYLE);
+  lStyle &= ~(WS_VSCROLL | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
+  SetWindowLong(wnd, GWL_STYLE, lStyle);
+
+  LONG lExStyle = GetWindowLong(wnd, GWL_EXSTYLE);
+  lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+  SetWindowLong(wnd, GWL_EXSTYLE, lExStyle);
+
+  SetWindowPos(wnd, NULL, 0,0,0,0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 
   // The input method context.
   imc = ImmGetContext(wnd);
@@ -1009,16 +1025,16 @@ main(int argc, char *argv[])
   term_resize(cfg.rows, cfg.cols);
 
   // Initialise the scroll bar.
-  SetScrollInfo(
-    wnd, SB_VERT,
-    &(SCROLLINFO){
-      .cbSize = sizeof(SCROLLINFO),
-      .fMask = SIF_ALL | SIF_DISABLENOSCROLL,
-      .nMin = 0, .nMax = cfg.rows - 1,
-      .nPage = cfg.rows, .nPos = 0,
-    },
-    false
-  );
+  // SetScrollInfo(
+  //   wnd, SB_VERT,
+  //   &(SCROLLINFO){
+  //     .cbSize = sizeof(SCROLLINFO),
+  //     .fMask = SIF_ALL | SIF_DISABLENOSCROLL,
+  //     .nMin = 0, .nMax = cfg.rows - 1,
+  //     .nPage = cfg.rows, .nPos = 0,
+  //   },
+  //   false
+  // );
 
   // Set up an empty caret bitmap. We're painting the cursor manually.
   caretbm = CreateBitmap(1, font_height, 1, 1, newn(short, font_height));
