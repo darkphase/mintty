@@ -1,0 +1,163 @@
+From a3196cd865d8e34a84c40563e95fea687ccd34a9 Mon Sep 17 00:00:00 2001
+From: Goker Cetin <goker@gggg.com>
+Date: Sat, 4 Oct 2014 15:36:08 +0300
+Subject: [PATCH] initial patch removed caption, border, scrollbar
+
+---
+ .gitignore |  2 ++
+ config.c   | 38 +++++++++++++++++++-------------------
+ term.c     |  2 +-
+ winmain.c  | 42 +++++++++++++++++++++++++++++-------------
+ 4 files changed, 51 insertions(+), 33 deletions(-)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..31dc307
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++*.d
++*.o
+diff --git a/config.c b/config.c
+index f528d7f..a146535 100644
+--- a/config.c
++++ b/config.c
+@@ -20,9 +20,9 @@ static string rc_filename = 0;
+ 
+ const config default_cfg = {
+   // Looks
+-  .fg_colour = 0xBFBFBF,
+-  .bg_colour = 0x000000,
+-  .cursor_colour = 0xBFBFBF,
++  .fg_colour = 0xEEE8D5,
++  .bg_colour = 0x111111,
++  .cursor_colour = 0x859900,
+   .transparency = 0,
+   .opaque_when_focused = false,
+   .cursor_type = CUR_LINE,
+@@ -81,22 +81,22 @@ const config default_cfg = {
+   .use_system_colours = false,
+   .ime_cursor_colour = DEFAULT_COLOUR,
+   .ansi_colours = {
+-    [BLACK_I]        = 0x000000,
+-    [RED_I]          = 0x0000BF,
+-    [GREEN_I]        = 0x00BF00,
+-    [YELLOW_I]       = 0x00BFBF,
+-    [BLUE_I]         = 0xBF0000,
+-    [MAGENTA_I]      = 0xBF00BF,
+-    [CYAN_I]         = 0xBFBF00,
+-    [WHITE_I]        = 0xBFBFBF,
+-    [BOLD_BLACK_I]   = 0x404040,
+-    [BOLD_RED_I]     = 0x4040FF,
+-    [BOLD_GREEN_I]   = 0x40FF40,
+-    [BOLD_YELLOW_I]  = 0x40FFFF,
+-    [BOLD_BLUE_I]    = 0xFF6060,
+-    [BOLD_MAGENTA_I] = 0xFF40FF,
+-    [BOLD_CYAN_I]    = 0xFFFF40,
+-    [BOLD_WHITE_I]   = 0xFFFFFF,
++    [BLACK_I]        = 0x073642, 
++    [RED_I]          = 0xDC322F,
++    [GREEN_I]        = 0x859900,
++    [YELLOW_I]       = 0xB58900,
++    [BLUE_I]         = 0x268BD2,
++    [MAGENTA_I]      = 0xD33682,
++    [CYAN_I]         = 0x2AA198,
++    [WHITE_I]        = 0xEEE8D5,
++    [BOLD_BLACK_I]   = 0x002B36,
++    [BOLD_RED_I]     = 0xCB4B16,
++    [BOLD_GREEN_I]   = 0x586E75,
++    [BOLD_YELLOW_I]  = 0x657B83,
++    [BOLD_BLUE_I]    = 0x839496,
++    [BOLD_MAGENTA_I] = 0x6C71C4,
++    [BOLD_CYAN_I]    = 0x93A1A1,
++    [BOLD_WHITE_I]   = 0xFDF6E3,
+   }
+ };
+ 
+diff --git a/term.c b/term.c
+index d673bdb..4b0db19 100644
+--- a/term.c
++++ b/term.c
+@@ -125,7 +125,7 @@ term_reset(void)
+   term.modify_other_keys = 0;
+   term.report_focus = term.report_ambig_width = 0;
+   term.bracketed_paste = false;
+-  term.show_scrollbar = true;
++  term.show_scrollbar = false;
+ 
+   term.marg_top = 0;
+   term.marg_bot = term.rows - 1;
+diff --git a/winmain.c b/winmain.c
+index e4405cf..d7a1eaf 100644
+--- a/winmain.c
++++ b/winmain.c
+@@ -470,7 +470,7 @@ win_reconfig(void)
+     win_init_fonts(cfg.font.size);
+     win_adapt_term_size();
+   }
+-  win_update_scrollbar();
++  // win_update_scrollbar();
+   update_transparency();
+   win_update_mouse();
+ 
+@@ -976,11 +976,27 @@ main(int argc, char *argv[])
+     cfg.x = CW_USEDEFAULT;
+ 
+   // Create initial window.
+-  wnd = CreateWindowExW(cfg.scrollbar < 0 ? WS_EX_LEFTSCROLLBAR : 0,
++  // wnd = CreateWindowExW(cfg.scrollbar < 0 ? WS_EX_LEFTSCROLLBAR : 0,
++  //                       wclass, wtitle,
++  //                       WS_OVERLAPPEDWINDOW | (cfg.scrollbar ? WS_VSCROLL : 0),
++  //                       cfg.x, cfg.y, width, height,
++  //                       null, null, inst, null);
++
++  wnd = CreateWindowExW(0,
+                         wclass, wtitle,
+-                        WS_OVERLAPPEDWINDOW | (cfg.scrollbar ? WS_VSCROLL : 0),
++                        WS_OVERLAPPEDWINDOW,
+                         cfg.x, cfg.y, width, height,
+                         null, null, inst, null);
++  
++  LONG lStyle = GetWindowLong(wnd, GWL_STYLE);
++  lStyle &= ~(WS_VSCROLL | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
++  SetWindowLong(wnd, GWL_STYLE, lStyle);
++
++  LONG lExStyle = GetWindowLong(wnd, GWL_EXSTYLE);
++  lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
++  SetWindowLong(wnd, GWL_EXSTYLE, lExStyle);
++
++  SetWindowPos(wnd, NULL, 0,0,0,0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+ 
+   // The input method context.
+   imc = ImmGetContext(wnd);
+@@ -1009,16 +1025,16 @@ main(int argc, char *argv[])
+   term_resize(cfg.rows, cfg.cols);
+ 
+   // Initialise the scroll bar.
+-  SetScrollInfo(
+-    wnd, SB_VERT,
+-    &(SCROLLINFO){
+-      .cbSize = sizeof(SCROLLINFO),
+-      .fMask = SIF_ALL | SIF_DISABLENOSCROLL,
+-      .nMin = 0, .nMax = cfg.rows - 1,
+-      .nPage = cfg.rows, .nPos = 0,
+-    },
+-    false
+-  );
++  // SetScrollInfo(
++  //   wnd, SB_VERT,
++  //   &(SCROLLINFO){
++  //     .cbSize = sizeof(SCROLLINFO),
++  //     .fMask = SIF_ALL | SIF_DISABLENOSCROLL,
++  //     .nMin = 0, .nMax = cfg.rows - 1,
++  //     .nPage = cfg.rows, .nPos = 0,
++  //   },
++  //   false
++  // );
+ 
+   // Set up an empty caret bitmap. We're painting the cursor manually.
+   caretbm = CreateBitmap(1, font_height, 1, 1, newn(short, font_height));
+-- 
+1.9.4.msysgit.1
+
