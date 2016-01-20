@@ -988,8 +988,9 @@ main(int argc, char *argv[])
                         cfg.x, cfg.y, width, height,
                         null, null, inst, null);
   
-  LONG lStyle = GetWindowLong(wnd, GWL_STYLE);
-  lStyle &= ~(WS_VSCROLL | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
+  // LONG lStyle = GetWindowLong(wnd, GWL_STYLE);
+  LONG lStyle = ( WS_BORDER );
+  // lStyle &= ~(WS_VSCROLL | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU | WS_BORDER );
   SetWindowLong(wnd, GWL_STYLE, lStyle);
 
   LONG lExStyle = GetWindowLong(wnd, GWL_EXSTYLE);

@@ -19,7 +19,7 @@ NAME := mintty
 
 ifdef TARGET
   CC := $(TARGET)-gcc
-  RC := $(TARGET)-windres
+  RC := windres
 else
   CC := gcc
   RC := windres
